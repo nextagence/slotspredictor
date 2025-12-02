@@ -46,7 +46,6 @@
       .item .meta{font-size:15px}
     }
 
-    /* Small touch targets and visual polish */
     button:active{transform:translateY(1px)}
     input:focus{outline:none;box-shadow:0 6px 18px rgba(24,160,251,0.12)}
   </style>
@@ -57,7 +56,7 @@
       <div class="head">
         <div>
           <h1>Генератор паттерна ставок — Technical</h1>
-          <div class="subtitle">Точный и прозрачный паттерн в 5 строк. Ставки идут в одном столбце, каждая ставка ≥ предыдущей.</div>
+          <div class="subtitle">5 ставок с учётом повторов, сумма учитывает бюджет. Каждая ставка ≥ предыдущей.</div>
         </div>
         <div class="subtitle">Коэффициенты и повторы настраиваются в коде</div>
       </div>
@@ -65,12 +64,11 @@
       <div class="controls">
         <div style="display:flex;flex-direction:column;gap:6px">
           <label for="budget">Бюджет (MAD)</label>
-          <input id="budget" type="number" value="320" min="5" />
+          <input id="budget" type="number" value="50" min="5" />
         </div>
 
         <div style="display:flex;flex-direction:column;gap:8px;justify-content:center">
           <button id="gen" class="btn" aria-label="Получить стратегию">Получить стратегию</button>
-          <!-- regen button will be inserted here on first run -->
         </div>
       </div>
 
@@ -85,94 +83,75 @@
 (function(){
   'use strict';
 
-  // Параметры паттерна (настраиваемые)
-  const coeffs = [1,2,1,2,4];   // относительные веса для распределения бюджета
-  const repeats = [5,3,4,2,5];  // отображаемые повторы
+  // Настраиваемые параметры
+  const repeats = [5,3,4,2,5]; // сколько раз каждая ставка повторяется
+  const coeffs = [1,2,1,2,4];  // относительные веса для распределения
 
   function computePattern(budget){
-  const coeffs = [1,2,1,2,4];   // веса ставок
-  const repeats = [5,3,4,2,5];   // количество прокрутов
+    // общая сумма повторов с учётом коэффициентов
+    const weightedRepeats = coeffs.map((c,i)=>c*repeats[i]);
+    const sumWeighted = weightedRepeats.reduce((s,v)=>s+v,0);
 
-  // суммарный "вес с учётом повторов"
-  const totalWeight = coeffs.reduce((sum, c, i) => sum + c * repeats[i], 0);
+    // распределяем бюджет
+    let raw = weightedRepeats.map(wr => budget * wr / sumWeighted);
 
-  // вычисляем ставки так, чтобы sum(ставка[i]*repeats[i]) = budget
-  let raw = coeffs.map((c, i) => c * repeats[i] / totalWeight * budget);
-
-  // округление вниз и распределение остатка
-  let rounded = raw.map(v => Math.floor(v));
-  let currentSum = rounded.reduce((s,v,i)=>s+v*repeats[i],0);
-  let diff = budget - currentSum;
-
-  // распределяем остаток по повторениям
-  while(diff > 0){
-    const idx = Math.floor(Math.random() * rounded.length);
-    rounded[idx] += 1;
-    diff -= repeats[idx]; // учитываем что ставка умножается на repeats
-    if(diff < 0){ // если перебор, уменьшаем последнюю
-      rounded[idx] += diff;
-      diff = 0;
+    // округление вниз и перераспределение остатка
+    let rounded = raw.map(v => Math.floor(v));
+    let diff = budget - rounded.reduce((s,v)=>s+v,0);
+    while(diff>0){
+      const idx = Math.floor(Math.random()*rounded.length);
+      rounded[idx]+=1;
+      diff--;
     }
-  }
 
-  // неубывающая последовательность ставок
-  for(let i=1;i<rounded.length;i++){
-    if(rounded[i] < rounded[i-1]){
-      const need = rounded[i-1] - rounded[i];
-      rounded[i] += need;
-      rounded[rounded.length-1] = Math.max(rounded[rounded.length-1] - need, 0);
+    // корректируем, чтобы последовательность была неубывающей
+    for(let i=1;i<rounded.length;i++){
+      if(rounded[i]<rounded[i-1]){
+        const need = rounded[i-1]-rounded[i];
+        rounded[i]+=need;
+        rounded[rounded.length-1]=Math.max(rounded[rounded.length-1]-need,0);
+      }
     }
-  }
 
-  return rounded;
-}
+    return rounded;
+  }
 
   function createRegenButton(){
     if(document.getElementById('regen')) return;
     const regen = document.createElement('button');
-    regen.id = 'regen'; regen.className = 'btn secondary'; regen.style.marginTop = '8px'; regen.innerText = 'Получить новую стратегию';
-    regen.addEventListener('click', function(){ document.getElementById('gen').click(); });
-    // вставляем под основную секцию controls
-    const controls = document.querySelector('.controls');
-    controls.appendChild(regen);
+    regen.id = 'regen'; regen.className='btn secondary'; regen.style.marginTop='8px'; regen.innerText='Получить новую стратегию';
+    regen.addEventListener('click',()=>document.getElementById('gen').click());
+    document.querySelector('.controls').appendChild(regen);
   }
 
   function render(budget, pattern){
     const out = document.getElementById('output');
     const list = document.getElementById('list');
     const footer = document.getElementById('footer');
-    list.innerHTML = '';
+    list.innerHTML='';
 
     for(let i=0;i<5;i++){
-      const div = document.createElement('div'); div.className='item';
-      const label = document.createElement('div'); label.className='label'; 
-      label.innerText = `Общая ставка ${rounded[i]} MAD x ${repeats[i]} = ${rounded[i]*repeats[i]} MAD`;
-      const meta = document.createElement('div'); meta.className='meta'; meta.innerText = `${repeats[i]} рет`;
+      const div=document.createElement('div'); div.className='item';
+      const label=document.createElement('div'); label.className='label';
+      label.innerText=`Ставка ${pattern[i]} MAD`;
+      const meta=document.createElement('div'); meta.className='meta';
+      meta.innerText=`${repeats[i]} рет`;
       div.appendChild(label); div.appendChild(meta);
       list.appendChild(div);
     }
 
-    footer.innerText = `Итого распределено: ${pattern.reduce((s,v,i)=>s+v*repeats[i],0)} MAD — Бюджет: ${budget} MAD`;
-
-
-    footer.innerText = `Итого распределено: ${pattern.reduce((s,v)=>s+v,0)} MAD — Бюджет: ${budget} MAD`;
-    out.style.display = 'block';
+    footer.innerText=`Итого распределено: ${pattern.reduce((s,v)=>s+v,0)} MAD — Бюджет: ${budget} MAD`;
+    out.style.display='block';
     createRegenButton();
 
-    // плавный скролл на мобилке к результату
-    setTimeout(()=>{
-      document.getElementById('output').scrollIntoView({behavior:'smooth', block:'start'});
-    },120);
+    setTimeout(()=>document.getElementById('output').scrollIntoView({behavior:'smooth',block:'start'}),120);
   }
 
-  document.getElementById('gen').addEventListener('click', function(){
-    const budget = Math.max(1, parseInt(document.getElementById('budget').value || '0', 10));
-    if(!budget){
-      alert('Введите корректный бюджет');
-      return;
-    }
-    const pattern = computePattern(budget);
-    render(budget, pattern);
+  document.getElementById('gen').addEventListener('click',()=>{
+    const budget=Math.max(1,parseInt(document.getElementById('budget').value||'0',10));
+    if(!budget){alert('Введите корректный бюджет'); return;}
+    const pattern=computePattern(budget);
+    render(budget,pattern);
   });
 
 })();
