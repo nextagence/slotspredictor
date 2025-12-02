@@ -144,15 +144,15 @@
     list.innerHTML = '';
 
     for(let i=0;i<5;i++){
-  const div = document.createElement('div'); div.className='item';
-  const label = document.createElement('div'); label.className='label'; 
-  label.innerText = `Общая ставка ${rounded[i]} MAD x ${repeats[i]} = ${rounded[i]*repeats[i]} MAD`;
-  const meta = document.createElement('div'); meta.className='meta'; meta.innerText = `${repeats[i]} рет`;
-  div.appendChild(label); div.appendChild(meta);
-  list.appendChild(div);
-}
+      const div = document.createElement('div'); div.className='item';
+      const label = document.createElement('div'); label.className='label'; 
+      label.innerText = `Общая ставка ${rounded[i]} MAD x ${repeats[i]} = ${rounded[i]*repeats[i]} MAD`;
+      const meta = document.createElement('div'); meta.className='meta'; meta.innerText = `${repeats[i]} рет`;
+      div.appendChild(label); div.appendChild(meta);
+      list.appendChild(div);
+    }
 
-footer.innerText = `Итого распределено: ${pattern.reduce((s,v,i)=>s+v*repeats[i],0)} MAD — Бюджет: ${budget} MAD`;
+    footer.innerText = `Итого распределено: ${pattern.reduce((s,v,i)=>s+v*repeats[i],0)} MAD — Бюджет: ${budget} MAD`;
 
 
     footer.innerText = `Итого распределено: ${pattern.reduce((s,v)=>s+v,0)} MAD — Бюджет: ${budget} MAD`;
