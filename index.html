@@ -1,72 +1,128 @@
 <!doctype html>
 <html lang="ru">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Паттерн ставок — генератор</title>
-<style>
-  body{margin:0;background:linear-gradient(180deg,#6a11cb,#2575fc);font-family:Arial,Helvetica,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;color:#111}
-  .card{width:100%;max-width:760px;padding:24px;border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,0.95),#fff);box-shadow:0 20px 60px rgba(0,0,0,.25);text-align:center}
-  h1{margin:0 0 12px;font-size:22px;color:#0b1220}
-  label{display:block;margin:12px 0 6px;font-weight:600;color:#333}
-  input{width:220px;padding:10px;border-radius:10px;border:1px solid #ddd;font-size:16px}
-  .btn{margin-top:14px;padding:12px 18px;border-radius:12px;border:none;background:#ff2db4;color:#fff;font-weight:700;cursor:pointer;box-shadow:0 8px 30px rgba(255,45,180,.25)}
-  .visual{margin-top:20px;padding:18px;border-radius:12px;background:linear-gradient(180deg,#0b1220,#122232);color:#fff}
-  .line{background:rgba(255,255,255,0.95);color:#0b1220;margin:8px auto;padding:10px 14px;border-radius:10px;display:inline-block;min-width:320px;font-size:20px;font-weight:800}
-  .hint{font-size:13px;color:#444;margin-top:8px}
-  @media(max-width:420px){ .line{min-width:260px;font-size:18px} input{width:160px} }
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Генератор паттерна ставок — Technical</title>
+  <style>
+    :root{
+      --bg:#0b1220; --panel:#0f1724; --accent:#18a0fb; --muted:#9fb0c9; --card:#071428; --glass:rgba(255,255,255,0.03);
+    }
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,#071427 0%,#0b1220 100%);font-family:Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; color:#e6eef8}
+    .wrap{min-height:100%;display:flex;align-items:center;justify-content:center;padding:28px}
+    .panel{width:100%;max-width:820px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;padding:22px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 10px 40px rgba(2,6,23,.7)}
+    .head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    h1{font-size:18px;margin:0;color:var(--accent)}
+    .subtitle{color:var(--muted);font-size:13px}
+
+    .controls{display:flex;gap:12px;align-items:center;margin-top:16px}
+    input[type=number]{width:160px;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:var(--panel);color:var(--muted);font-weight:600}
+    .btn{background:linear-gradient(180deg,var(--accent),#0b84d6);border:none;color:#042129;padding:10px 16px;border-radius:10px;font-weight:700;cursor:pointer;box-shadow:0 6px 18px rgba(24,160,251,0.18)}
+    .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);box-shadow:none;font-weight:600}
+
+    .output{margin-top:18px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border-radius:10px;padding:18px;border:1px solid rgba(255,255,255,0.02)}
+    .list{display:flex;flex-direction:column;gap:10px;max-width:360px;margin:0 auto}
+    .item{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-radius:8px;background:linear-gradient(90deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.02)}
+    .item .label{font-weight:800;color:#ffffff}
+    .item .meta{color:var(--muted);font-family:monospace}
+
+    .footer{margin-top:14px;text-align:center;color:var(--muted);font-size:13px}
+
+    @media(max-width:520px){.controls{flex-direction:column;align-items:stretch}input[type=number]{width:100%}}
+  </style>
 </head>
 <body>
-  <div class="card">
-    <h1>Генератор паттерна ставок</h1>
-    <label>Введите бюджет (MAD) — по этому бюджету распределим паттерн</label>
-    <input id="budget" type="number" value="320" min="5" />
-    <div class="hint">Паттерн: коэффициенты [1,2,1,2,4], повторы [5,3,4,2,5]. Можно изменить в коде.</div>
-    <button class="btn" id="gen">Создать паттерн</button>
+  <div class="wrap">
+    <div class="panel" role="main">
+      <div class="head">
+        <div>
+          <h1>Генератор паттерна ставок — Technical</h1>
+          <div class="subtitle">Точный и прозрачный паттерн в 5 строк. Ставки идут в одном столбце, каждая ставка ≥ предыдущей.</div>
+        </div>
+        <div class="subtitle">Паттерн: коэффициенты и повторы настраиваются в коде</div>
+      </div>
 
-    <div class="visual" id="outArea" aria-live="polite" role="status" style="display:none">
-      <!-- сюда вывод -->
+      <div class="controls">
+        <label for="budget" style="color:var(--muted);font-weight:600">Бюджет (MAD)</label>
+        <input id="budget" type="number" value="320" min="5" />
+        <button id="gen" class="btn">Получить стратегию</button>
+        <!-- placeholder for regen button -->
+      </div>
+
+      <div id="output" class="output" aria-live="polite" style="display:none">
+        <div class="list" id="list"></div>
+        <div class="footer" id="footer"></div>
+      </div>
     </div>
   </div>
 
 <script>
-document.getElementById('gen').addEventListener('click', ()=> {
-  const budget = Math.max(1, parseInt(document.getElementById('budget').value || 0, 10));
-  // базовый паттерн коэффициентов (растущий эффект)
-  const coeffs = [1,2,1,2,4]; // можно править
-  const repeats = [5,3,4,2,5]; // как в картинке — количество рет
-  const sumCoeff = coeffs.reduce((s,v)=>s+v,0);
+(function(){
+  'use strict';
 
-  // вычисляем сумму для каждой позиции пропорционально coeff
-  let raw = coeffs.map(c => c / sumCoeff * budget);
+  // Базовый паттерн: коэффициенты (определяют относительную долю) и повторы
+  const coeffs = [1,2,1,2,4];   // можно менять
+  const repeats = [5,3,4,2,5];  // количество рет (показываем в выводе)
 
-  // округляем суммы к целым и добиваем разницу в последний элемент
-  let rounded = raw.map(v => Math.floor(v));
-  let totalRounded = rounded.reduce((s,v)=>s+v,0);
-  let diff = budget - totalRounded;
-  rounded[rounded.length - 1] += diff; // положим остаток в последний
+  function computePattern(budget){
+    const sumCoeff = coeffs.reduce((s,v)=>s+v,0);
+    // разделим бюджет пропорционально coeffs
+    let raw = coeffs.map(c => c / sumCoeff * budget);
+    // округлим вниз
+    let rounded = raw.map(v => Math.floor(v));
+    // добираем остаток в последний слот
+    let diff = budget - rounded.reduce((s,v)=>s+v,0);
+    rounded[rounded.length-1] += diff;
 
-  // Формат вывода: "Общая ставка X - Y рет"
-  const outArea = document.getElementById('outArea');
-  outArea.style.display = 'block';
-  outArea.innerHTML = ''; // очистить
+    // Гарантируем неубывающие ставки: если где-то нарушено — поправляем
+    for(let i=1;i<rounded.length;i++){
+      if(rounded[i] < rounded[i-1]){
+        // подтянем текущую до предыдущей
+        const need = rounded[i-1] - rounded[i];
+        rounded[i] += need;
+        // заберём из последнего
+        rounded[rounded.length-1] = Math.max(rounded[rounded.length-1] - need, 0);
+      }
+    }
 
-  // стилизованный вывод: крупные белые карточки, как на картинке
-  for(let i=0;i<5;i++){
-    const line = document.createElement('div');
-    line.className = 'line';
-    line.innerText = `Общая ставка ${rounded[i]} - ${repeats[i]} рет`;
-    outArea.appendChild(line);
+    return rounded;
   }
 
-  // добавим снизу итог для информации
-  const info = document.createElement('div');
-  info.style.marginTop = '12px';
-  info.style.color = '#dfe9ff';
-  info.textContent = `Итого распределено: ${rounded.reduce((s,v)=>s+v,0)} MAD — Бюджет: ${budget} MAD`;
-  outArea.appendChild(info);
-});
+  function render(budget, pattern){
+    const out = document.getElementById('output');
+    const list = document.getElementById('list');
+    const footer = document.getElementById('footer');
+    list.innerHTML = '';
+
+    for(let i=0;i<5;i++){
+      const div = document.createElement('div'); div.className='item';
+      const label = document.createElement('div'); label.className='label'; label.innerText = `Общая ставка ${pattern[i]}`;
+      const meta = document.createElement('div'); meta.className='meta'; meta.innerText = `${repeats[i]} рет`;
+      div.appendChild(label); div.appendChild(meta);
+      list.appendChild(div);
+    }
+
+    footer.innerText = `Итого распределено: ${pattern.reduce((s,v)=>s+v,0)} MAD — Бюджет: ${budget} MAD`;
+    out.style.display = 'block';
+
+    // если кнопки получения новой стратегии ещё нет — создаём
+    if(!document.getElementById('regen')){
+      const regen = document.createElement('button');
+      regen.id = 'regen'; regen.className = 'btn secondary'; regen.style.marginLeft = '8px'; regen.innerText = 'Получить новую стратегию';
+      regen.onclick = function(){ document.getElementById('gen').click(); };
+      // вставим после main gen button
+      const genBtn = document.getElementById('gen');
+      genBtn.parentNode.insertBefore(regen, genBtn.nextSibling);
+    }
+  }
+
+  document.getElementById('gen').addEventListener('click', function(){
+    const budget = Math.max(1, parseInt(document.getElementById('budget').value || '0', 10));
+    const pattern = computePattern(budget);
+    render(budget, pattern);
+  });
+
+})();
 </script>
 </body>
 </html>
