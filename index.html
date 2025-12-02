@@ -90,22 +90,42 @@
   const repeats = [5,3,4,2,5];  // отображаемые повторы
 
   function computePattern(budget){
-    const sumCoeff = coeffs.reduce((s,v)=>s+v,0);
-    let raw = coeffs.map(c => c / sumCoeff * budget);
-    let rounded = raw.map(v => Math.floor(v));
-    let diff = budget - rounded.reduce((s,v)=>s+v,0);
-    rounded[rounded.length-1] += diff;
+  const coeffs = [1,2,1,2,4];   // веса ставок
+  const repeats = [5,3,4,2,5];   // количество прокрутов
 
-    // Обеспечим неубывающую последовательность
-    for(let i=1;i<rounded.length;i++){
-      if(rounded[i] < rounded[i-1]){
-        let need = rounded[i-1] - rounded[i];
-        rounded[i] += need;
-        rounded[rounded.length-1] = Math.max(rounded[rounded.length-1] - need, 0);
-      }
+  // суммарный "вес с учётом повторов"
+  const totalWeight = coeffs.reduce((sum, c, i) => sum + c * repeats[i], 0);
+
+  // вычисляем ставки так, чтобы sum(ставка[i]*repeats[i]) = budget
+  let raw = coeffs.map((c, i) => c * repeats[i] / totalWeight * budget);
+
+  // округление вниз и распределение остатка
+  let rounded = raw.map(v => Math.floor(v));
+  let currentSum = rounded.reduce((s,v,i)=>s+v*repeats[i],0);
+  let diff = budget - currentSum;
+
+  // распределяем остаток по повторениям
+  while(diff > 0){
+    const idx = Math.floor(Math.random() * rounded.length);
+    rounded[idx] += 1;
+    diff -= repeats[idx]; // учитываем что ставка умножается на repeats
+    if(diff < 0){ // если перебор, уменьшаем последнюю
+      rounded[idx] += diff;
+      diff = 0;
     }
-    return rounded;
   }
+
+  // неубывающая последовательность ставок
+  for(let i=1;i<rounded.length;i++){
+    if(rounded[i] < rounded[i-1]){
+      const need = rounded[i-1] - rounded[i];
+      rounded[i] += need;
+      rounded[rounded.length-1] = Math.max(rounded[rounded.length-1] - need, 0);
+    }
+  }
+
+  return rounded;
+}
 
   function createRegenButton(){
     if(document.getElementById('regen')) return;
@@ -124,12 +144,16 @@
     list.innerHTML = '';
 
     for(let i=0;i<5;i++){
-      const div = document.createElement('div'); div.className='item';
-      const label = document.createElement('div'); label.className='label'; label.innerText = `Общая ставка ${pattern[i]} MAD`;
-      const meta = document.createElement('div'); meta.className='meta'; meta.innerText = `${repeats[i]} рет`;
-      div.appendChild(label); div.appendChild(meta);
-      list.appendChild(div);
-    }
+  const div = document.createElement('div'); div.className='item';
+  const label = document.createElement('div'); label.className='label'; 
+  label.innerText = `Общая ставка ${rounded[i]} MAD x ${repeats[i]} = ${rounded[i]*repeats[i]} MAD`;
+  const meta = document.createElement('div'); meta.className='meta'; meta.innerText = `${repeats[i]} рет`;
+  div.appendChild(label); div.appendChild(meta);
+  list.appendChild(div);
+}
+
+footer.innerText = `Итого распределено: ${pattern.reduce((s,v,i)=>s+v*repeats[i],0)} MAD — Бюджет: ${budget} MAD`;
+
 
     footer.innerText = `Итого распределено: ${pattern.reduce((s,v)=>s+v,0)} MAD — Бюджет: ${budget} MAD`;
     out.style.display = 'block';
