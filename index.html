@@ -1,132 +1,72 @@
-<!DOCTYPE html>
-<html lang="ar">
+<!doctype html>
+<html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Predictor</title>
-
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Паттерн ставок — генератор</title>
 <style>
-    body {
-        margin: 0;
-        padding: 0;
-        font-family: "Tahoma", sans-serif;
-        direction: rtl;
-        background: url('https://i.imgur.com/4t4A8dH.jpeg');
-        background-size: cover;
-        background-position: center;
-        color: #fff;
-    }
-
-    .container {
-        width: 90%;
-        max-width: 420px;
-        margin: 40px auto;
-        padding: 20px;
-        background: rgba(0,0,0,0.65);
-        border-radius: 16px;
-        box-shadow: 0 0 25px #ff00c8;
-        backdrop-filter: blur(6px);
-    }
-
-    h2 {
-        text-align: center;
-        margin-bottom: 20px;
-        color: #ff7be0;
-        text-shadow: 0 0 8px #ff00d4;
-    }
-
-    input {
-        width: 100%;
-        padding: 12px;
-        margin-bottom: 14px;
-        border-radius: 10px;
-        border: none;
-        font-size: 16px;
-        outline: none;
-    }
-
-    .btn {
-        width: 100%;
-        padding: 14px;
-        background: #ff28b8;
-        border: none;
-        border-radius: 12px;
-        font-size: 18px;
-        color: #fff;
-        cursor: pointer;
-        transition: 0.25s;
-        text-shadow: 0 0 6px #ff0095;
-        box-shadow: 0 0 20px #ff00c8;
-    }
-
-    .btn:hover {
-        transform: scale(1.04);
-        background: #ff4ed1;
-        box-shadow: 0 0 25px #ff00e1;
-    }
-
-    .result {
-        margin-top: 20px;
-        padding: 15px;
-        background: rgba(255, 255, 255, 0.12);
-        border-radius: 12px;
-        font-size: 17px;
-        line-height: 1.6;
-        box-shadow: inset 0 0 10px #ff00b7;
-    }
+  body{margin:0;background:linear-gradient(180deg,#6a11cb,#2575fc);font-family:Arial,Helvetica,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;color:#111}
+  .card{width:100%;max-width:760px;padding:24px;border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,0.95),#fff);box-shadow:0 20px 60px rgba(0,0,0,.25);text-align:center}
+  h1{margin:0 0 12px;font-size:22px;color:#0b1220}
+  label{display:block;margin:12px 0 6px;font-weight:600;color:#333}
+  input{width:220px;padding:10px;border-radius:10px;border:1px solid #ddd;font-size:16px}
+  .btn{margin-top:14px;padding:12px 18px;border-radius:12px;border:none;background:#ff2db4;color:#fff;font-weight:700;cursor:pointer;box-shadow:0 8px 30px rgba(255,45,180,.25)}
+  .visual{margin-top:20px;padding:18px;border-radius:12px;background:linear-gradient(180deg,#0b1220,#122232);color:#fff}
+  .line{background:rgba(255,255,255,0.95);color:#0b1220;margin:8px auto;padding:10px 14px;border-radius:10px;display:inline-block;min-width:320px;font-size:20px;font-weight:800}
+  .hint{font-size:13px;color:#444;margin-top:8px}
+  @media(max-width:420px){ .line{min-width:260px;font-size:18px} input{width:160px} }
 </style>
 </head>
-
 <body>
+  <div class="card">
+    <h1>Генератор паттерна ставок</h1>
+    <label>Введите бюджет (MAD) — по этому бюджету распределим паттерн</label>
+    <input id="budget" type="number" value="320" min="5" />
+    <div class="hint">Паттерн: коэффициенты [1,2,1,2,4], повторы [5,3,4,2,5]. Можно изменить в коде.</div>
+    <button class="btn" id="gen">Создать паттерн</button>
 
-<div class="container">
-    <h2>مولد الإستراتيجية</h2>
-
-    <input id="totalInput" type="number" placeholder="أدخل المبلغ الإجمالي (MAD)">
-    
-    <button class="btn" onclick="generateStrategy()">الحصول على الإستراتيجية</button>
-
-    <div id="result" class="result"></div>
-</div>
+    <div class="visual" id="outArea" aria-live="polite" role="status" style="display:none">
+      <!-- сюда вывод -->
+    </div>
+  </div>
 
 <script>
-function generateStrategy() {
-    let total = parseInt(document.getElementById("totalInput").value);
-    if (!total || total <= 0) {
-        document.getElementById("result").innerHTML = "الرجاء إدخال مبلغ صالح.";
-        return;
-    }
+document.getElementById('gen').addEventListener('click', ()=> {
+  const budget = Math.max(1, parseInt(document.getElementById('budget').value || 0, 10));
+  // базовый паттерн коэффициентов (растущий эффект)
+  const coeffs = [1,2,1,2,4]; // можно править
+  const repeats = [5,3,4,2,5]; // как в картинке — количество рет
+  const sumCoeff = coeffs.reduce((s,v)=>s+v,0);
 
-    // تحديد نسب تصاعدية ثابتة 5 جولات
-    let ratios = [0.10, 0.15, 0.20, 0.25, 0.30]; 
-    let rounds = [];
-    let remaining = total;
+  // вычисляем сумму для каждой позиции пропорционально coeff
+  let raw = coeffs.map(c => c / sumCoeff * budget);
 
-    for (let i = 0; i < 5; i++) {
-        let bet = Math.round(total * ratios[i]);
-        if (bet < 1) bet = 1;
+  // округляем суммы к целым и добиваем разницу в последний элемент
+  let rounded = raw.map(v => Math.floor(v));
+  let totalRounded = rounded.reduce((s,v)=>s+v,0);
+  let diff = budget - totalRounded;
+  rounded[rounded.length - 1] += diff; // положим остаток в последний
 
-        // آخر جولة تحصل على المتبقي بالكامل
-        if (i === 4) bet = remaining;
+  // Формат вывода: "Общая ставка X - Y рет"
+  const outArea = document.getElementById('outArea');
+  outArea.style.display = 'block';
+  outArea.innerHTML = ''; // очистить
 
-        remaining -= bet;
+  // стилизованный вывод: крупные белые карточки, как на картинке
+  for(let i=0;i<5;i++){
+    const line = document.createElement('div');
+    line.className = 'line';
+    line.innerText = `Общая ставка ${rounded[i]} - ${repeats[i]} рет`;
+    outArea.appendChild(line);
+  }
 
-        rounds.push({
-            round: i + 1,
-            amount: bet,
-            spins: Math.max(1, Math.floor(Math.random() * 4) + 2) // 2–5 раз
-        });
-    }
-
-    // Показ результата
-    let html = "";
-    rounds.forEach(r => {
-        html += ` الجولة ${r.round}:  ${r.amount} MAD × ${r.spins} مرات<br>`;
-    });
-
-    document.getElementById("result").innerHTML = html;
-}
+  // добавим снизу итог для информации
+  const info = document.createElement('div');
+  info.style.marginTop = '12px';
+  info.style.color = '#dfe9ff';
+  info.textContent = `Итого распределено: ${rounded.reduce((s,v)=>s+v,0)} MAD — Бюджет: ${budget} MAD`;
+  outArea.appendChild(info);
+});
 </script>
-
 </body>
 </html>
