@@ -4,6 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>Генератор паттерна ставок</title>
+
 <style>
 :root{
   --bg:#071427; --panel:#0f1724; --accent:#18a0fb; --muted:#9fb0c9;
@@ -39,7 +40,7 @@ input[type=number]{padding:10px;border-radius:8px;background:var(--panel);border
 <div class="wrap">
   <div class="panel">
     <h1>Генератор паттерна ставок — Technical</h1>
-    <div class="subtitle">5 неубывающих ставок. Каждая = ставка × количество повторов. Сумма всех = бюджету.</div>
+    <div class="subtitle">5 разных сумм, каждая = ставка × количество спинов. Сумма всегда равна бюджету.</div>
 
     <div class="controls">
       <div style="display:flex;flex-direction:column;gap:6px">
@@ -59,47 +60,50 @@ input[type=number]{padding:10px;border-radius:8px;background:var(--panel);border
 
 <script>
 (function(){
-  const repeats = [5,3,4,2,5]; // количество прокрутов
-  const weights = [1,2,1,2,4]; // веса для распределения *per-spin*
+  const spins = [5,3,4,2,5]; // количество спинов
+  const weights = [1,2,1,2,4]; // веса (рандом распределения)
 
   function computePattern(budget){
-    // 1) сумма всех (вес × рет)
-    const weighted = weights.map((w,i)=>w*repeats[i]);
-    const sumWeighted = weighted.reduce((a,b)=>a+b,0);
+    // веса × спины = базовая структура строки
+    const base = weights.map((w,i)=> w * spins[i]);
+    const sumBase = base.reduce((a,b)=>a+b,0);
 
-    // 2) рассчитываем сумму строки (final = perSpin × ret)
-    let rowSum = weighted.map(w => (budget * w) / sumWeighted);
+    // распределяем бюджет пропорционально
+    let raw = base.map(v => v / sumBase * budget);
 
-    // 3) округление вниз + перераспределение остатка
-    let rounded = rowSum.map(v=>Math.floor(v));
+    // округление вниз
+    let rounded = raw.map(v => Math.floor(v));
     let diff = budget - rounded.reduce((a,b)=>a+b,0);
-    while(diff>0){
+
+    // распределяем оставшиеся деньги
+    while(diff > 0){
       const idx = Math.floor(Math.random()*rounded.length);
-      rounded[idx]++; diff--;
+      rounded[idx] += 1;
+      diff--;
     }
 
-    // 4) обеспечиваем неубывающую последовательность
-    for(let i=1;i<5;i++){
-      if(rounded[i] < rounded[i-1]){
-        const need = rounded[i-1] - rounded[i];
-        rounded[i] += need;
-        rounded[4] = Math.max(rounded[4] - need, 0);
+    // обеспечиваем 5 разных значений
+    let used = new Set();
+    for(let i=0;i<5;i++){
+      while(used.has(rounded[i])){
+        rounded[i] += 1;
       }
+      used.add(rounded[i]);
     }
 
-    // 5) вычисляем ставку per-spin
-    const perSpin = rounded.map((sum,i)=> Math.max(1, Math.floor(sum / repeats[i])));
+    // сортируем по возрастанию (как паттерн ставок)
+    rounded.sort((a,b)=>a-b);
 
-    // финальная проверка
-    return perSpin.map((ps,i)=> ps * repeats[i]);
+    return rounded;
   }
 
   function render(pattern, budget){
-    const out = document.getElementById("output");
     const list = document.getElementById("list");
     const footer = document.getElementById("footer");
+    const out = document.getElementById("output");
 
     list.innerHTML = "";
+
     for(let i=0;i<5;i++){
       const div = document.createElement("div");
       div.className="item";
@@ -110,7 +114,7 @@ input[type=number]{padding:10px;border-radius:8px;background:var(--panel);border
 
       const meta = document.createElement("div");
       meta.className="meta";
-      meta.innerText = `${repeats[i]} рет`;
+      meta.innerText = `${spins[i]} спинов`;
 
       div.appendChild(label);
       div.appendChild(meta);
@@ -118,6 +122,7 @@ input[type=number]{padding:10px;border-radius:8px;background:var(--panel);border
     }
 
     footer.innerText = `Итого: ${pattern.reduce((a,b)=>a+b,0)} MAD — бюджет: ${budget} MAD`;
+
     out.style.display = "block";
   }
 
