@@ -95,7 +95,26 @@
       width:100%;
     }
 
-    .btn:active{transform:translateY(1px)}
+    .btn:disabled{
+      opacity:0.6;
+      cursor:not-allowed;
+    }
+
+    /* ===== LOADER ===== */
+    .loader{
+      display:none;
+      margin-top:18px;
+      text-align:center;
+      font-size:14px;
+      color:var(--muted);
+      animation:fade 1.2s infinite;
+    }
+
+    @keyframes fade{
+      0%{opacity:0.2}
+      50%{opacity:1}
+      100%{opacity:0.2}
+    }
 
     .output{
       margin-top:18px;
@@ -174,6 +193,9 @@
       <button id="gen" class="btn">الحصول على الإستراتيجية</button>
     </div>
 
+    <!-- LOADER -->
+    <div id="loader" class="loader">جاري التحليل…</div>
+
     <div id="output" class="output">
       <div id="list" class="list"></div>
       <div id="footer" class="footer"></div>
@@ -195,22 +217,17 @@
   function computePattern(budget){
     let raw = randomUnique5();
     let sumRaw = raw.reduce((a,b)=>a+b,0);
-
-    // масштабируем под бюджет
     let scaled = raw.map(v => v / sumRaw * budget);
 
-    // округляем
     let rounded = scaled.map(v => Math.floor(v));
     let diff = budget - rounded.reduce((a,b)=>a+b,0);
 
-    // раскидываем остаток
     while (diff > 0){
       let i = Math.floor(Math.random()*5);
       rounded[i]++;
       diff--;
     }
 
-    // делаем значения уникальными
     let used = new Set();
     for (let i=0;i<5;i++){
       while (used.has(rounded[i])){
@@ -219,7 +236,6 @@
       used.add(rounded[i]);
     }
 
-    // перемешиваем, чтобы не было ощущения сортировки
     for (let i = rounded.length - 1; i > 0; i--){
       const j = Math.floor(Math.random() * (i + 1));
       [rounded[i], rounded[j]] = [rounded[j], rounded[i]];
@@ -230,7 +246,7 @@
 
   function generateSpins(sum){
     if (sum > 15) return 1;
-    return Math.floor(Math.random()*6) + 2; // 2–7
+    return Math.floor(Math.random()*6) + 2;
   }
 
   function render(pattern, budget){
@@ -264,14 +280,28 @@
     out.style.display = "block";
   }
 
-  document.getElementById("gen").addEventListener("click", () => {
+  const btn = document.getElementById("gen");
+  const loader = document.getElementById("loader");
+  const output = document.getElementById("output");
+
+  btn.addEventListener("click", () => {
     const budget = parseInt(document.getElementById("budget").value) || 0;
     if (budget <= 0){
       alert("أدخل ميزانية صحيحة من فضلك");
       return;
     }
-    const pattern = computePattern(budget);
-    render(pattern, budget);
+
+    btn.disabled = true;
+    loader.style.display = "block";
+    output.style.display = "none";
+
+    setTimeout(() => {
+      const pattern = computePattern(budget);
+      render(pattern, budget);
+
+      loader.style.display = "none";
+      btn.disabled = false;
+    }, 1500); // مدة التأخير 1.5 ثانية
   });
 
 })();
