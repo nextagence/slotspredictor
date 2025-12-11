@@ -428,4 +428,216 @@
       padding:4px 10px;
       white-space:nowrap;
       border:1px solid rgba(34,197,94,0.6);
-      box-shadow:0 0 14px
+      box-shadow:0 0 14px rgba(34,197,94,0.4);
+    }
+
+    .footer{
+      text-align:center;
+      margin-top:9px;
+      font-size:11px;
+      color:var(--muted);
+      font-family:ui-monospace,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+    }
+
+    @media (max-width:600px){
+      .wrap{padding:12px}
+      .panel{padding:14px 12px 16px}
+      h1{font-size:17px}
+      .controls{flex-direction:column;align-items:stretch}
+      input[type=number]{width:100%}
+      .btn{width:100%;font-size:15px;padding:12px 14px}
+      .item{padding:9px 9px}
+      .label{font-size:14px}
+      .meta{font-size:11px;padding:3px 9px}
+    }
+  </style>
+</head>
+
+<body>
+<div class="wrap">
+  <div class="panel">
+    <div class="panel-inner">
+      <div class="top-row">
+        <h1>
+          <span class="cipher-dot"></span>
+          مولّد نمط الرهانات
+        </h1>
+        <div class="status-pill">
+          <span class="status-dot"></span>
+          <span>وضع التحليل النمطي v1.4</span>
+        </div>
+      </div>
+
+      <div class="subtitle">
+        توليد <span>5 أنماط مختلفة</span> للرهان من ميزانية واحدة. إذا كان إجمالي الرهان أكبر من 15 درهم، يتم استخدام <span>لفة واحدة</span> فقط في هذا السطر.
+      </div>
+
+      <div class="controls">
+        <div style="display:flex;flex-direction:column;width:100%">
+          <label for="budget">
+            الميزانية الكلية (MAD)
+            <span class="chip">من 5 وما فوق</span>
+          </label>
+          <input id="budget" type="number" value="50" min="5" placeholder="مثال: 50">
+        </div>
+        <button id="gen" class="btn">
+          <span>الحصول على الإستراتيجية</span>
+        </button>
+      </div>
+
+      <!-- LOADER -->
+      <div id="loader" class="loader">
+        <div class="loader-left">
+          <div class="loader-dots">
+            <div class="loader-dot"></div>
+            <div class="loader-dot"></div>
+            <div class="loader-dot"></div>
+          </div>
+          <span>جاري تحليل النمط من ميزانيتك…</span>
+        </div>
+        <div class="loader-tag">SYSTEM: ACTIVE</div>
+      </div>
+
+      <div id="output" class="output">
+        <div class="output-header">
+          <span>نتيجة آخر تحليل</span>
+          <span class="output-header-code" id="sessionTag">SESSION #0000</span>
+        </div>
+        <div id="list" class="list"></div>
+        <div id="footer" class="footer"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+
+  // ====== UTILITIES ======
+
+  function randomUnique5(){
+    const s = new Set();
+    while (s.size < 5){
+      s.add(Math.floor(Math.random()*100) + 10);
+    }
+    return Array.from(s);
+  }
+
+  function computePattern(budget){
+    const raw = randomUnique5();
+    const sumRaw = raw.reduce((a,b)=>a+b,0);
+    const scaled = raw.map(v => v / sumRaw * budget);
+
+    let rounded = scaled.map(v => Math.floor(v));
+    let diff = budget - rounded.reduce((a,b)=>a+b,0);
+
+    while (diff > 0){
+      const i = Math.floor(Math.random()*5);
+      rounded[i]++;
+      diff--;
+    }
+
+    const used = new Set();
+    for (let i=0;i<5;i++){
+      while (used.has(rounded[i])){
+        rounded[i]++;
+      }
+      used.add(rounded[i]);
+    }
+
+    for (let i = rounded.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [rounded[i], rounded[j]] = [rounded[j], rounded[i]];
+    }
+
+    return rounded;
+  }
+
+  function generateSpins(sum){
+    if (sum > 15) return 1;
+    return Math.floor(Math.random()*6) + 2; // 2–7
+  }
+
+  function generateSessionId(){
+    const now = Date.now().toString(16).slice(-4);
+    const rand = Math.floor(Math.random()*4096).toString(16).padStart(3,"0");
+    return `#${now.toUpperCase()}-${rand.toUpperCase()}`;
+  }
+
+  // ====== RENDER ======
+
+  function render(pattern, budget){
+    const list = document.getElementById("list");
+    const out = document.getElementById("output");
+    const footer = document.getElementById("footer");
+    const sessionTag = document.getElementById("sessionTag");
+
+    list.innerHTML = "";
+
+    sessionTag.textContent = "SESSION " + generateSessionId();
+
+    for (let i=0;i<5;i++){
+      const total = pattern[i];
+      const spins = generateSpins(total);
+
+      const div = document.createElement("div");
+      div.className = "item";
+
+      const main = document.createElement("div");
+      main.className = "item-main";
+
+      const label = document.createElement("div");
+      label.className = "label";
+      label.textContent = `إجمالي الرهان: ${total} MAD`;
+
+      const sub = document.createElement("div");
+      sub.className = "sub-label";
+      sub.textContent = `خط رقم ${i+1} — high-variance pattern`;
+
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      meta.textContent = `عدد اللفات: ${spins}`;
+
+      main.appendChild(label);
+      main.appendChild(sub);
+      div.appendChild(main);
+      div.appendChild(meta);
+      list.appendChild(div);
+    }
+
+    const sum = pattern.reduce((a,b)=>a+b,0);
+    footer.textContent = `TOTAL DISTRIBUTED = ${sum} MAD   |   INPUT BUDGET = ${budget} MAD`;
+
+    out.style.display = "block";
+  }
+
+  // ====== INTERACTION ======
+
+  const btn = document.getElementById("gen");
+  const loader = document.getElementById("loader");
+  const output = document.getElementById("output");
+
+  btn.addEventListener("click", () => {
+    const budget = parseInt(document.getElementById("budget").value, 10) || 0;
+    if (budget <= 0){
+      alert("أدخل ميزانية صحيحة من فضلك (أعلى من 0).");
+      return;
+    }
+
+    btn.disabled = true;
+    loader.style.display = "flex";
+    output.style.display = "none";
+
+    setTimeout(() => {
+      const pattern = computePattern(budget);
+      render(pattern, budget);
+
+      loader.style.display = "none";
+      btn.disabled = false;
+    }, 1500); // задержка 1.5 секунды
+  });
+
+})();
+</script>
+</body>
+</html>
