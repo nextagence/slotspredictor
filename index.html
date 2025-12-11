@@ -1,178 +1,132 @@
 <!doctype html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>مولّد نمط الرهانات</title>
-
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Predictor Configurator</title>
   <style>
     :root{
-      --bg:#071427;
-      --panel:#0f1724;
-      --accent:#18a0fb;
-      --muted:#9fb0c9;
-      --badge-bg:rgba(24,160,251,0.12);
+      --bg:#020617;
+      --panel:#0f172a;
+      --accent:#22c55e;
+      --muted:#9ca3af;
     }
-
     html,body{
       margin:0;
       height:100%;
-      background:#071427;
-      color:#e6eef8;
+      background:radial-gradient(circle at top,#1e293b,#020617);
+      color:#e5e7eb;
       font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
       -webkit-font-smoothing:antialiased;
     }
-
     .wrap{
       min-height:100%;
       display:flex;
       justify-content:center;
       padding:16px;
     }
-
     .panel{
       width:100%;
-      max-width:420px;
-      background:#0f1724;
+      max-width:960px;
+      background:rgba(15,23,42,0.96);
       border-radius:16px;
-      padding:18px 16px 20px;
-      box-shadow:0 10px 40px rgba(0,0,0,.7);
+      padding:20px 18px 18px;
+      box-shadow:0 18px 60px rgba(0,0,0,.8);
     }
-
     h1{
-      margin:0;
-      font-size:19px;
+      margin:0 0 4px;
+      font-size:22px;
       color:var(--accent);
     }
-
     .subtitle{
-      font-size:12px;
+      font-size:13px;
       color:var(--muted);
-      margin-top:4px;
-      line-height:1.5;
+      margin-bottom:16px;
     }
-
-    .controls{
-      margin-top:16px;
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:12px;
+    }
+    .field{
       display:flex;
-      gap:10px;
-      align-items:flex-end;
-      flex-wrap:wrap;
+      flex-direction:column;
+      gap:4px;
     }
-
     label{
       font-size:13px;
-      font-weight:600;
       color:var(--muted);
-      margin-bottom:4px;
-    }
-
-    input[type=number]{
-      padding:11px 10px;
-      border-radius:10px;
-      background:var(--panel);
-      border:1px solid rgba(255,255,255,.06);
-      color:#e5e7eb;
       font-weight:600;
-      width:140px;
+    }
+    select,input{
+      border-radius:10px;
+      border:1px solid rgba(148,163,184,.4);
+      background:#020617;
+      color:#e5e7eb;
+      padding:8px 10px;
       font-size:14px;
     }
-
-    input:focus{
+    input:focus,select:focus{
       outline:none;
       box-shadow:0 0 0 1px var(--accent);
     }
-
     .btn{
-      padding:12px 16px;
+      margin-top:16px;
+      width:100%;
+      padding:11px 14px;
       border:none;
       border-radius:12px;
-      background:linear-gradient(180deg,var(--accent),#0b84d6);
-      color:#042129;
+      background:linear-gradient(135deg,#22c55e,#16a34a);
+      color:#022c22;
       font-weight:700;
       cursor:pointer;
       font-size:15px;
+    }
+    .btn:active{transform:translateY(1px)}
+    .output-wrap{
+      margin-top:18px;
+    }
+    textarea{
       width:100%;
-    }
-
-    .btn:disabled{
-      opacity:0.6;
-      cursor:not-allowed;
-    }
-
-    /* ===== LOADER ===== */
-    .loader{
-      display:none;
-      margin-top:18px;
-      text-align:center;
-      font-size:14px;
-      color:var(--muted);
-      animation:fade 1.2s infinite;
-    }
-
-    @keyframes fade{
-      0%{opacity:0.2}
-      50%{opacity:1}
-      100%{opacity:0.2}
-    }
-
-    .output{
-      margin-top:18px;
-      padding:14px 10px 6px;
-      border-radius:14px;
-      background:rgba(255,255,255,0.02);
-      display:none;
-    }
-
-    .list{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
-
-    .item{
-      padding:10px 12px;
+      min-height:260px;
       border-radius:12px;
-      background:rgba(255,255,255,0.03);
-      border:1px solid rgba(255,255,255,0.05);
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-    }
-
-    .label{
-      font-size:15px;
-      font-weight:800;
-      color:#ffffff;
-    }
-
-    .meta{
-      font-size:13px;
-      color:#dbeafe;
-      font-weight:700;
-      background:var(--badge-bg);
-      border-radius:999px;
-      padding:4px 10px;
-      white-space:nowrap;
-    }
-
-    .footer{
-      text-align:center;
-      margin-top:10px;
+      border:1px solid rgba(148,163,184,.5);
+      background:#020617;
+      color:#e5e7eb;
+      padding:10px;
+      font-family:ui-monospace,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
       font-size:12px;
+      resize:vertical;
+      white-space:pre;
+    }
+    .actions{
+      margin-top:8px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .small-btn{
+      border:none;
+      border-radius:999px;
+      padding:6px 12px;
+      font-size:12px;
+      cursor:pointer;
+      background:#111827;
+      color:#e5e7eb;
+    }
+    .small-btn.primary{
+      background:#22c55e;
+      color:#022c22;
+      font-weight:600;
+    }
+    .hint{
+      font-size:11px;
       color:var(--muted);
     }
-
-    @media (max-width:600px){
-      .wrap{padding:12px}
-      .panel{padding:16px 14px 18px}
-      h1{font-size:18px}
-      .controls{flex-direction:column;align-items:stretch}
-      input[type=number]{width:100%}
-      .btn{width:100%;font-size:16px;padding:13px 16px}
-      .item{padding:10px}
-      .label{font-size:15px}
-      .meta{font-size:13px}
+    @media(max-width:768px){
+      .grid{grid-template-columns:1fr;}
     }
   </style>
 </head>
@@ -180,128 +134,531 @@
 <body>
 <div class="wrap">
   <div class="panel">
-    <h1>مولّد نمط الرهانات</h1>
+    <h1>Predictor Configurator</h1>
     <div class="subtitle">
-      مبالغ عشوائية وعدد لفّات متغيّر. إذا كان إجمالي الرهان أكبر من 15 درهم، تكون هناك لفّة واحدة فقط.
+      Choose language, currency, minimum total bet and spin rules. The configurator will output a ready-to-use HTML file.
     </div>
 
-    <div class="controls">
-      <div style="display:flex;flex-direction:column;width:100%">
-        <label for="budget">الميزانية (MAD)</label>
-        <input id="budget" type="number" value="50" min="5">
+    <div class="grid">
+      <div class="field">
+        <label for="lang">Language / Idioma / اللغة</label>
+        <select id="lang">
+          <option value="en">English</option>
+          <option value="es">Español</option>
+          <option value="ar">العربية</option>
+        </select>
       </div>
-      <button id="gen" class="btn">الحصول على الإستراتيجية</button>
+
+      <div class="field">
+        <label for="currency">Currency code (MAD, NGN, PEN…)</label>
+        <input id="currency" type="text" value="MAD" maxlength="6" />
+      </div>
+
+      <div class="field">
+        <label for="defaultBudget">Default budget value</label>
+        <input id="defaultBudget" type="number" value="50" min="1" />
+      </div>
+
+      <div class="field">
+        <label for="highThreshold">High bet threshold (1 spin)</label>
+        <input id="highThreshold" type="number" value="15" min="1" />
+      </div>
+
+      <div class="field">
+        <label for="minSpins">Min spins for low bets</label>
+        <input id="minSpins" type="number" value="2" min="1" />
+      </div>
+
+      <div class="field">
+        <label for="maxSpins">Max spins for low bets</label>
+        <input id="maxSpins" type="number" value="7" min="1" />
+      </div>
+
+      <div class="field">
+        <label for="minTotal">Min total bet per line</label>
+        <input id="minTotal" type="number" value="3" min="1" />
+      </div>
     </div>
 
-    <!-- LOADER -->
-    <div id="loader" class="loader">جاري التحليل…</div>
+    <button class="btn" id="generate">Generate predictor code</button>
 
-    <div id="output" class="output">
-      <div id="list" class="list"></div>
-      <div id="footer" class="footer"></div>
+    <div class="output-wrap">
+      <textarea id="codeOutput" placeholder="Generated predictor HTML will appear here..."></textarea>
+      <div class="actions">
+        <div>
+          <button class="small-btn primary" id="copyBtn">Copy code</button>
+          <button class="small-btn" id="downloadBtn" style="display:none;">Download .html</button>
+        </div>
+        <div class="hint">
+          Paste the code into any .html file and deploy. It already contains CSS + JS inside.
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
 (function(){
-
-  function randomUnique5(){
-    const s = new Set();
-    while (s.size < 5){
-      s.add(Math.floor(Math.random()*100) + 10);
+  var translations = {
+    en:{
+      langAttr:'en', dir:'ltr',
+      title:'Bet Pattern Terminal',
+      subtitle:'Neon-styled bet pattern with randomized lines and spins. If the total bet is high, only 1 spin is used.',
+      budgetLabel:'Budget',
+      buttonText:'Run strategy',
+      totalBetLabel:'Total bet:',
+      spinsLabel:'Spins:',
+      footerPrefix:'Total:',
+      footerBudgetLabel:'Budget',
+      loadingLabel:'Compiling pattern…',
+      alertBudget:'Please enter a valid budget.'
+    },
+    es:{
+      langAttr:'es', dir:'ltr',
+      title:'Terminal de patrón de apuestas',
+      subtitle:'Patrón de apuestas con estilo neón y giros aleatorios. Si la apuesta total es alta, solo se usa 1 giro.',
+      budgetLabel:'Presupuesto',
+      buttonText:'Ejecutar estrategia',
+      totalBetLabel:'Apuesta total:',
+      spinsLabel:'Giros:',
+      footerPrefix:'Total:',
+      footerBudgetLabel:'Presupuesto',
+      loadingLabel:'Compilando el patrón…',
+      alertBudget:'Introduce un presupuesto válido.'
+    },
+    ar:{
+      langAttr:'ar', dir:'rtl',
+      title:'وحدة نمط الرهانات',
+      subtitle:'نمط رهان بتصميم نيوني وعدد لفّات عشوائي. إذا كان إجمالي الرهان كبيرًا، يتم استخدام لفّة واحدة فقط.',
+      budgetLabel:'الميزانية',
+      buttonText:'تشغيل الإستراتيجية',
+      totalBetLabel:'إجمالي الرهان:',
+      spinsLabel:'عدد اللفات:',
+      footerPrefix:'الإجمالي:',
+      footerBudgetLabel:'الميزانية',
+      loadingLabel:'جاري توليد النمط…',
+      alertBudget:'أدخل ميزانية صحيحة من فضلك.'
     }
-    return Array.from(s);
+  };
+
+  function buildPredictorCode(lang, currency, defaultBudget, highThreshold, minSpins, maxSpins, minTotal){
+    var t = translations[lang] || translations.en;
+    currency = currency.toUpperCase();
+
+    var lines = [];
+
+    lines.push('<!doctype html>');
+    lines.push('<html lang="'+t.langAttr+'" dir="'+t.dir+'">');
+    lines.push('<head>');
+    lines.push('  <meta charset="utf-8" />');
+    lines.push('  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />');
+    lines.push('  <title>'+t.title+'</title>');
+    lines.push('  <style>');
+    lines.push('    :root{');
+    lines.push('      --bg:#020617;');
+    lines.push('      --grid:#0b1220;');
+    lines.push('      --panel:#020617;');
+    lines.push('      --accent:#22c55e;');
+    lines.push('      --accent-soft:rgba(34,197,94,0.2);');
+    lines.push('      --muted:#9ca3af;');
+    lines.push('      --text:#e5e7eb;');
+    lines.push('    }');
+    lines.push('    html,body{');
+    lines.push('      margin:0;');
+    lines.push('      height:100%;');
+    lines.push('      background:');
+    lines.push('        radial-gradient(circle at top,#1f2937 0,#020617 55%),');
+    lines.push('        repeating-linear-gradient(');
+    lines.push('          to bottom,');
+    lines.push('          rgba(15,23,42,0.4) 0,');
+    lines.push('          rgba(15,23,42,0.4) 1px,');
+    lines.push('          transparent 1px,');
+    lines.push('          transparent 3px');
+    lines.push('        );');
+    lines.push('      color:var(--text);');
+    lines.push('      font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;');
+    lines.push('      -webkit-font-smoothing:antialiased;');
+    lines.push('    }');
+    lines.push('    .wrap{');
+    lines.push('      min-height:100%;');
+    lines.push('      display:flex;');
+    lines.push('      justify-content:center;');
+    lines.push('      padding:16px;');
+    lines.push('    }');
+    lines.push('    .panel{');
+    lines.push('      width:100%;');
+    lines.push('      max-width:460px;');
+    lines.push('      background:linear-gradient(135deg,rgba(15,23,42,0.96),rgba(2,6,23,0.98));');
+    lines.push('      border-radius:18px;');
+    lines.push('      padding:18px 18px 20px;');
+    lines.push('      box-shadow:0 0 45px rgba(34,197,94,0.18);');
+    lines.push('      border:1px solid rgba(15,23,42,0.9);');
+    lines.push('      position:relative;');
+    lines.push('      overflow:hidden;');
+    lines.push('    }');
+    lines.push('    .panel::before{');
+    lines.push('      content:"";');
+    lines.push('      position:absolute;');
+    lines.push('      inset:-1px;');
+    lines.push('      background:radial-gradient(circle at top,var(--accent-soft) 0,transparent 55%);');
+    lines.push('      opacity:0.35;');
+    lines.push('      pointer-events:none;');
+    lines.push('    }');
+    lines.push('    .panel-inner{');
+    lines.push('      position:relative;');
+    lines.push('      z-index:1;');
+    lines.push('    }');
+    lines.push('    .panel-header{');
+    lines.push('      display:flex;');
+    lines.push('      align-items:flex-start;');
+    lines.push('      justify-content:space-between;');
+    lines.push('      gap:10px;');
+    lines.push('      margin-bottom:10px;');
+    lines.push('    }');
+    lines.push('    h1{');
+    lines.push('      margin:0;');
+    lines.push('      font-size:17px;');
+    lines.push('      color:var(--accent);');
+    lines.push('      letter-spacing:0.04em;');
+    lines.push('      text-transform:uppercase;');
+    lines.push('    }');
+    lines.push('    .subtitle{');
+    lines.push('      font-size:12px;');
+    lines.push('      color:var(--muted);');
+    lines.push('      margin-top:4px;');
+    lines.push('      line-height:1.5;');
+    lines.push('    }');
+    lines.push('    .chip{');
+    lines.push('      font-size:11px;');
+    lines.push('      color:var(--accent);');
+    lines.push('      border-radius:999px;');
+    lines.push('      border:1px solid rgba(34,197,94,0.4);');
+    lines.push('      padding:4px 10px;');
+    lines.push('      text-transform:uppercase;');
+    lines.push('      letter-spacing:0.09em;');
+    lines.push('      background:rgba(6,95,70,0.14);');
+    lines.push('      white-space:nowrap;');
+    lines.push('    }');
+    lines.push('    .controls{');
+    lines.push('      margin-top:10px;');
+    lines.push('      display:flex;');
+    lines.push('      gap:10px;');
+    lines.push('      align-items:flex-end;');
+    lines.push('      flex-wrap:wrap;');
+    lines.push('      border-radius:12px;');
+    lines.push('      padding:10px 10px 12px;');
+    lines.push('      background:linear-gradient(135deg,rgba(15,23,42,0.85),rgba(8,47,35,0.45));');
+    lines.push('      border:1px solid rgba(34,197,94,0.26);');
+    lines.push('    }');
+    lines.push('    label{');
+    lines.push('      font-size:11px;');
+    lines.push('      font-weight:600;');
+    lines.push('      color:var(--muted);');
+    lines.push('      text-transform:uppercase;');
+    lines.push('      letter-spacing:0.08em;');
+    lines.push('      margin-bottom:3px;');
+    lines.push('    }');
+    lines.push('    input[type=number]{');
+    lines.push('      padding:9px 10px;');
+    lines.push('      border-radius:10px;');
+    lines.push('      background:#020617;');
+    lines.push('      border:1px solid rgba(148,163,184,0.6);');
+    lines.push('      color:var(--text);');
+    lines.push('      font-weight:600;');
+    lines.push('      width:150px;');
+    lines.push('      font-size:13px;');
+    lines.push('      font-family:ui-monospace,Menlo,Monaco,Consolas,"Courier New",monospace;');
+    lines.push('    }');
+    lines.push('    input:focus{');
+    lines.push('      outline:none;');
+    lines.push('      box-shadow:0 0 0 1px var(--accent);');
+    lines.push('      border-color:var(--accent);');
+    lines.push('    }');
+    lines.push('    .btn{');
+    lines.push('      padding:11px 14px;');
+    lines.push('      border:none;');
+    lines.push('      border-radius:11px;');
+    lines.push('      background:radial-gradient(circle at top,var(--accent) 0,#16a34a 45%,#065f46 100%);');
+    lines.push('      color:#022c22;');
+    lines.push('      font-weight:700;');
+    lines.push('      cursor:pointer;');
+    lines.push('      font-size:14px;');
+    lines.push('      min-width:130px;');
+    lines.push('      box-shadow:0 0 18px rgba(34,197,94,0.4);');
+    lines.push('      text-transform:uppercase;');
+    lines.push('      letter-spacing:0.08em;');
+    lines.push('    }');
+    lines.push('    .btn:active{transform:translateY(1px);}');
+    lines.push('    .btn:disabled{opacity:0.55;cursor:not-allowed;box-shadow:none;}');
+    lines.push('    .loader{');
+    lines.push('      margin-top:12px;');
+    lines.push('      text-align:center;');
+    lines.push('      font-size:12px;');
+    lines.push('      color:var(--muted);');
+    lines.push('      display:none;');
+    lines.push('      font-family:ui-monospace,Menlo,Monaco,Consolas,"Courier New",monospace;');
+    lines.push('      letter-spacing:0.08em;');
+    lines.push('      text-transform:uppercase;');
+    lines.push('      animation:fade 1.2s infinite;');
+    lines.push('    }');
+    lines.push('    @keyframes fade{0%{opacity:0.2}50%{opacity:1}100%{opacity:0.2}}');
+    lines.push('    .output{');
+    lines.push('      margin-top:16px;');
+    lines.push('      padding:12px 10px 8px;');
+    lines.push('      border-radius:14px;');
+    lines.push('      background:radial-gradient(circle at top left,rgba(34,197,94,0.12),rgba(15,23,42,0.96));');
+    lines.push('      display:none;');
+    lines.push('      border:1px solid rgba(31,41,55,0.9);');
+    lines.push('    }');
+    lines.push('    .list{');
+    lines.push('      display:flex;');
+    lines.push('      flex-direction:column;');
+    lines.push('      gap:8px;');
+    lines.push('      margin-bottom:6px;');
+    lines.push('    }');
+    lines.push('    .item{');
+    lines.push('      position:relative;');
+    lines.push('      padding:8px 11px;');
+    lines.push('      border-radius:10px;');
+    lines.push('      background:linear-gradient(90deg,rgba(15,23,42,0.9),rgba(2,6,23,0.95));');
+    lines.push('      border:1px solid rgba(55,65,81,0.9);');
+    lines.push('      display:flex;');
+    lines.push('      justify-content:space-between;');
+    lines.push('      align-items:center;');
+    lines.push('      font-family:ui-monospace,Menlo,Monaco,Consolas,"Courier New",monospace;');
+    lines.push('    }');
+    lines.push('    .item::before{');
+    lines.push('      content:"";');
+    lines.push('      position:absolute;');
+    lines.push('      inset:0;');
+    lines.push('      border-radius:inherit;');
+    lines.push('      border-left:2px solid rgba(34,197,94,0.9);');
+    lines.push('      opacity:0.9;');
+    lines.push('      pointer-events:none;');
+    lines.push('    }');
+    lines.push('    .label{');
+    lines.push('      font-size:13px;');
+    lines.push('      font-weight:600;');
+    lines.push('      color:var(--text);');
+    lines.push('      padding-left:4px;');
+    lines.push('      white-space:nowrap;');
+    lines.push('    }');
+    lines.push('    .meta{');
+    lines.push('      font-size:12px;');
+    lines.push('      color:#bbf7d0;');
+    lines.push('      font-weight:700;');
+    lines.push('      background:rgba(22,163,74,0.18);');
+    lines.push('      border-radius:999px;');
+    lines.push('      padding:4px 10px;');
+    lines.push('      white-space:nowrap;');
+    lines.push('      border:1px solid rgba(34,197,94,0.55);');
+    lines.push('      text-transform:uppercase;');
+    lines.push('      letter-spacing:0.08em;');
+    lines.push('    }');
+    lines.push('    .footer{');
+    lines.push('      text-align:center;');
+    lines.push('      margin-top:6px;');
+    lines.push('      font-size:11px;');
+    lines.push('      color:var(--muted);');
+    lines.push('      font-family:ui-monospace,Menlo,Monaco,Consolas,"Courier New",monospace;');
+    lines.push('      letter-spacing:0.06em;');
+    lines.push('      text-transform:uppercase;');
+    lines.push('    }');
+    lines.push('    @media(max-width:600px){');
+    lines.push('      .wrap{padding:12px;}');
+    lines.push('      .panel{padding:16px 14px 18px;}');
+    lines.push('      h1{font-size:16px;}');
+    lines.push('      .controls{flex-direction:column;align-items:stretch;}');
+    lines.push('      input[type=number]{width:100%;}');
+    lines.push('      .btn{width:100%;font-size:15px;padding:12px 14px;}');
+    lines.push('      .item{padding:8px 9px;}');
+    lines.push('      .label{font-size:12px;}');
+    lines.push('      .meta{font-size:11px;}');
+    lines.push('    }');
+    lines.push('  </style>');
+    lines.push('</head>');
+    lines.push('<body>');
+    lines.push('  <div class="wrap">');
+    lines.push('    <div class="panel">');
+    lines.push('      <div class="panel-inner">');
+    lines.push('        <div class="panel-header">');
+    lines.push('          <div>');
+    lines.push('            <h1>'+t.title+'</h1>');
+    lines.push('            <div class="subtitle">'+t.subtitle+'</div>');
+    lines.push('          </div>');
+    lines.push('          <div class="chip">SYS: ACTIVE</div>');
+    lines.push('        </div>');
+    lines.push('        <div class="controls">');
+    lines.push('          <div style="display:flex;flex-direction:column;width:100%;">');
+    lines.push('            <label for="budget">'+t.budgetLabel+' ('+currency+')</label>');
+    lines.push('            <input id="budget" type="number" value="'+defaultBudget+'" min="1" />');
+    lines.push('          </div>');
+    lines.push('          <button id="gen" class="btn">'+t.buttonText+'</button>');
+    lines.push('        </div>');
+    lines.push('        <div id="loader" class="loader">'+t.loadingLabel+'</div>');
+    lines.push('        <div id="output" class="output">');
+    lines.push('          <div id="list" class="list"></div>');
+    lines.push('          <div id="footer" class="footer"></div>');
+    lines.push('        </div>');
+    lines.push('      </div>');
+    lines.push('    </div>');
+    lines.push('  </div>');
+    lines.push('');
+    lines.push('  <script>');
+    lines.push('  (function(){');
+    lines.push('    var CURRENCY = "'+currency+'";');
+    lines.push('    var HIGH_BET_THRESHOLD = '+highThreshold+';');
+    lines.push('    var MIN_SPINS = '+minSpins+';');
+    lines.push('    var MAX_SPINS = '+maxSpins+';');
+    lines.push('    var MIN_TOTAL_BET = '+minTotal+';');
+    lines.push('');
+    lines.push('    function randomUnique5(){');
+    lines.push('      var s = new Set();');
+    lines.push('      while(s.size < 5){');
+    lines.push('        s.add(Math.floor(Math.random()*100) + 10);');
+    lines.push('      }');
+    lines.push('      return Array.from(s);');
+    lines.push('    }');
+    lines.push('');
+    lines.push('    function computePattern(budget){');
+    lines.push('      var minTotal = MIN_TOTAL_BET;');
+    lines.push('      if(minTotal * 5 > budget){');
+    lines.push('        minTotal = Math.max(1, Math.floor(budget / 5));');
+    lines.push('      }');
+    lines.push('      var baseMinSum = minTotal * 5;');
+    lines.push('      var remaining = Math.max(0, budget - baseMinSum);');
+    lines.push('');
+    lines.push('      var raw = randomUnique5();');
+    lines.push('      var sumRaw = raw.reduce(function(a,b){return a+b;},0);');
+    lines.push('      var extra = raw.map(function(v){return remaining * v / sumRaw;});');
+    lines.push('      var extraRounded = extra.map(function(v){return Math.floor(v);});');
+    lines.push('      var diff = remaining - extraRounded.reduce(function(a,b){return a+b;},0);');
+    lines.push('');
+    lines.push('      while(diff > 0){');
+    lines.push('        var i = Math.floor(Math.random()*5);');
+    lines.push('        extraRounded[i]++;');
+    lines.push('        diff--;');
+    lines.push('      }');
+    lines.push('');
+    lines.push('      var totals = [];');
+    lines.push('      for(var j=0;j<5;j++){');
+    lines.push('        totals[j] = minTotal + extraRounded[j];');
+    lines.push('      }');
+    lines.push('');
+    lines.push('      var used = new Set();');
+    lines.push('      for(var k=0;k<5;k++){');
+    lines.push('        while(used.has(totals[k])){');
+    lines.push('          totals[k]++;');
+    lines.push('        }');
+    lines.push('        used.add(totals[k]);');
+    lines.push('      }');
+    lines.push('');
+    lines.push('      for(var n = totals.length - 1; n > 0; n--){');
+    lines.push('        var idx = Math.floor(Math.random()*(n+1));');
+    lines.push('        var tmp = totals[n];');
+    lines.push('        totals[n] = totals[idx];');
+    lines.push('        totals[idx] = tmp;');
+    lines.push('      }');
+    lines.push('      return totals;');
+    lines.push('    }');
+    lines.push('');
+    lines.push('    function generateSpins(sum){');
+    lines.push('      if(sum > HIGH_BET_THRESHOLD) return 1;');
+    lines.push('      return Math.floor(Math.random() * (MAX_SPINS - MIN_SPINS + 1)) + MIN_SPINS;');
+    lines.push('    }');
+    lines.push('');
+    lines.push('    function render(pattern, budget){');
+    lines.push('      var list = document.getElementById("list");');
+    lines.push('      var out = document.getElementById("output");');
+    lines.push('      var footer = document.getElementById("footer");');
+    lines.push('      list.innerHTML = "";');
+    lines.push('      for(var i=0;i<5;i++){');
+    lines.push('        var total = pattern[i];');
+    lines.push('        var totalStr = total.toFixed ? total.toFixed(2) : String(total);');
+    lines.push('        var spins = generateSpins(total);');
+    lines.push('        var div = document.createElement("div");');
+    lines.push('        div.className = "item";');
+    lines.push('        var label = document.createElement("div");');
+    lines.push('        label.className = "label";');
+    lines.push('        label.textContent = "#"+(i+1)+"  '+t.totalBetLabel+' " + totalStr + " " + CURRENCY;');
+    lines.push('        var meta = document.createElement("div");');
+    lines.push('        meta.className = "meta";');
+    lines.push('        meta.textContent = "'+t.spinsLabel+' " + spins;');
+    lines.push('        div.appendChild(label);');
+    lines.push('        div.appendChild(meta);');
+    lines.push('        list.appendChild(div);');
+    lines.push('      }');
+    lines.push('      var sumAll = pattern.reduce(function(a,b){return a+b;},0);');
+    lines.push('      var sumStr = sumAll.toFixed ? sumAll.toFixed(2) : String(sumAll);');
+    lines.push('      var budgetStr = budget.toFixed ? budget.toFixed(2) : String(budget);');
+    lines.push('      footer.textContent = "'+t.footerPrefix+' " + sumStr + " " + CURRENCY + " — '+t.footerBudgetLabel+': " + budgetStr + " " + CURRENCY;');
+    lines.push('      out.style.display = "block";');
+    lines.push('    }');
+    lines.push('');
+    lines.push('    var btn = document.getElementById("gen");');
+    lines.push('    var loader = document.getElementById("loader");');
+    lines.push('');
+    lines.push('    document.getElementById("gen").addEventListener("click", function(){');
+    lines.push('      var budget = parseInt(document.getElementById("budget").value,10) || 0;');
+    lines.push('      if(budget <= 0){');
+    lines.push('        alert("'+t.alertBudget.replace(/"/g,'\\"')+'");');
+    lines.push('        return;');
+    lines.push('      }');
+    lines.push('      btn.disabled = true;');
+    lines.push('      loader.style.display = "block";');
+    lines.push('      document.getElementById("output").style.display = "none";');
+    lines.push('      setTimeout(function(){');
+    lines.push('        var pattern = computePattern(budget);');
+    lines.push('        render(pattern, budget);');
+    lines.push('        loader.style.display = "none";');
+    lines.push('        btn.disabled = false;');
+    lines.push('      }, 5000);');
+    lines.push('    });');
+    lines.push('  })();');
+    lines.push('  </scr' + 'ipt>');
+    lines.push('</body>');
+    lines.push('</html>');
+
+    return lines.join('\n');
   }
 
-  function computePattern(budget){
-    let raw = randomUnique5();
-    let sumRaw = raw.reduce((a,b)=>a+b,0);
-    let scaled = raw.map(v => v / sumRaw * budget);
+  var generateBtn = document.getElementById('generate');
+  var output = document.getElementById('codeOutput');
+  var copyBtn = document.getElementById('copyBtn');
+  var downloadBtn = document.getElementById('downloadBtn');
 
-    let rounded = scaled.map(v => Math.floor(v));
-    let diff = budget - rounded.reduce((a,b)=>a+b,0);
+  generateBtn.addEventListener('click', function(){
+    var lang = document.getElementById('lang').value;
+    var currency = (document.getElementById('currency').value || 'USD').toUpperCase();
+    var defaultBudget = parseInt(document.getElementById('defaultBudget').value,10) || 50;
+    var highThreshold = parseInt(document.getElementById('highThreshold').value,10) || 15;
+    var minSpins = parseInt(document.getElementById('minSpins').value,10) || 2;
+    var maxSpins = parseInt(document.getElementById('maxSpins').value,10) || 7;
+    var minTotal = parseInt(document.getElementById('minTotal').value,10) || 1;
 
-    while (diff > 0){
-      let i = Math.floor(Math.random()*5);
-      rounded[i]++;
-      diff--;
+    var code = buildPredictorCode(lang, currency, defaultBudget, highThreshold, minSpins, maxSpins, minTotal);
+    output.value = code;
+
+    var blob = new Blob([code], {type:'text/html'});
+    var url = URL.createObjectURL(blob);
+    downloadBtn.style.display = 'inline-block';
+    downloadBtn.onclick = function(){
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'predictor_'+lang+'_'+currency+'.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    };
+  });
+
+  copyBtn.addEventListener('click', function(){
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(output.value || '');
+    }else{
+      output.select();
+      document.execCommand('copy');
     }
-
-    let used = new Set();
-    for (let i=0;i<5;i++){
-      while (used.has(rounded[i])){
-        rounded[i]++;
-      }
-      used.add(rounded[i]);
-    }
-
-    for (let i = rounded.length - 1; i > 0; i--){
-      const j = Math.floor(Math.random() * (i + 1));
-      [rounded[i], rounded[j]] = [rounded[j], rounded[i]];
-    }
-
-    return rounded;
-  }
-
-  function generateSpins(sum){
-    if (sum > 14) return 1;
-    return Math.floor(Math.random()*6) + 2;
-  }
-
-  function render(pattern, budget){
-    const list = document.getElementById("list");
-    const out = document.getElementById("output");
-    const footer = document.getElementById("footer");
-
-    list.innerHTML = "";
-
-    for (let i=0;i<5;i++){
-      const total = pattern[i];
-      const spins = generateSpins(total);
-
-      const div = document.createElement("div");
-      div.className = "item";
-
-      const label = document.createElement("div");
-      label.className = "label";
-      label.textContent = `إجمالي الرهان: ${total} MAD`;
-
-      const meta = document.createElement("div");
-      meta.className = "meta";
-      meta.textContent = `عدد اللفات: ${spins}`;
-
-      div.appendChild(label);
-      div.appendChild(meta);
-      list.appendChild(div);
-    }
-
-    footer.textContent = `الإجمالي: ${pattern.reduce((a,b)=>a+b,0)} MAD — الميزانية: ${budget} MAD`;
-    out.style.display = "block";
-  }
-
-  const btn = document.getElementById("gen");
-  const loader = document.getElementById("loader");
-  const output = document.getElementById("output");
-
-  btn.addEventListener("click", () => {
-    const budget = parseInt(document.getElementById("budget").value) || 0;
-    if (budget <= 0){
-      alert("أدخل ميزانية صحيحة من فضلك");
-      return;
-    }
-
-    btn.disabled = true;
-    loader.style.display = "block";
-    output.style.display = "none";
-
-    setTimeout(() => {
-      const pattern = computePattern(budget);
-      render(pattern, budget);
-
-      loader.style.display = "none";
-      btn.disabled = false;
-    }, 5000); // مدة التأخير 1.5 ثانية
   });
 
 })();
