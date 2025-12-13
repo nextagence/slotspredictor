@@ -3,27 +3,21 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>مولّد نمط الرهانات — وضع الهكر</title>
+  <title>PatternX — Slot Pattern Generator</title>
 
   <style>
     :root{
       --bg:#020617;
-      --bg-alt:#020817;
       --panel:#050816;
-      --panel-soft:#0b1220;
       --accent:#22c55e;
       --accent-soft:rgba(34,197,94,0.2);
       --accent-strong:#4ade80;
       --muted:#9ca3af;
-      --danger:#f97373;
       --text:#e5e7eb;
       --badge-bg:rgba(34,197,94,0.14);
-      --border-subtle:rgba(148,163,184,0.25);
     }
 
-    *{
-      box-sizing:border-box;
-    }
+    *{box-sizing:border-box;}
 
     html,body{
       margin:0;
@@ -34,7 +28,6 @@
       -webkit-font-smoothing:antialiased;
     }
 
-    /* ===== BACKGROUND GRID / GLOW ===== */
     body::before{
       content:"";
       position:fixed;
@@ -64,18 +57,18 @@
     }
 
     .wrap{
-      min-height:100%;
+      min-height:100vh;
       display:flex;
       justify-content:center;
-      align-items:flex-start; /* прижали панель к верху */
-      padding:12px;
+      align-items:center;
+      padding:16px;
     }
 
     .panel{
       width:100%;
-      max-width:460px;
-      border-radius:18px;
-      padding:14px 14px 10px; /* уменьшил низ */
+      max-width:520px;
+      border-radius:20px;
+      padding:16px 16px 10px;
       background:radial-gradient(circle at top,#020617,#020617 55%,#000 100%);
       border:1px solid rgba(148,163,184,0.35);
       box-shadow:
@@ -84,13 +77,14 @@
         0 0 22px rgba(34,197,94,0.18);
       position:relative;
       overflow:hidden;
+      transition:opacity .3s ease, transform .3s ease, filter .3s ease;
     }
 
     .panel::before{
       content:"";
       position:absolute;
       inset:1px;
-      border-radius:16px;
+      border-radius:18px;
       background:radial-gradient(circle at 0 0,rgba(34,197,94,0.12),transparent 60%),
                  radial-gradient(circle at 100% 100%,rgba(56,189,248,0.16),transparent 55%);
       opacity:.9;
@@ -98,18 +92,66 @@
       z-index:-1;
     }
 
-    .panel-inner{
-      position:relative;
-      z-index:1;
+    body.page-transition .panel{
+      opacity:0.7;
+      filter:blur(1px);
     }
 
-    /* ===== HEADER / STATUS BAR ===== */
+    .panel-inner{position:relative;z-index:1;}
+
+    .app-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:8px;
+    }
+
+    .logo-block{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .logo-mark{
+      width:32px;
+      height:32px;
+      border-radius:12px;
+      background:radial-gradient(circle at 0 0,#22c55e,#0f172a);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:800;
+      font-size:16px;
+      color:#022c22;
+      box-shadow:0 0 18px rgba(34,197,94,0.7);
+    }
+
+    .logo-text-main{
+      font-size:13px;
+      font-weight:700;
+      color:#e5e7eb;
+    }
+
+    .logo-text-sub{
+      font-size:10px;
+      color:var(--muted);
+    }
+
+    .app-version{
+      font-size:11px;
+      color:var(--muted);
+      padding:3px 8px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,0.4);
+      background:rgba(15,23,42,0.8);
+    }
+
     .top-row{
       display:flex;
       justify-content:space-between;
       align-items:center;
       gap:10px;
-      margin-bottom:8px;
+      margin-bottom:6px;
     }
 
     h1{
@@ -169,7 +211,159 @@
       font-weight:600;
     }
 
-    /* ===== CONTROLS / INPUT BAR ===== */
+    .screen{display:none;}
+    .screen.active{display:block;}
+
+    .games-title{
+      margin-top:12px;
+      font-size:14px;
+      font-weight:700;
+      color:#e5e7eb;
+    }
+
+    .games-column{
+      margin-top:12px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+
+    .game-card{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(148,163,184,0.5);
+      background:radial-gradient(circle at top,rgba(15,23,42,0.95),rgba(15,23,42,1));
+      cursor:pointer;
+      transition:transform .15s ease-out, box-shadow .15s ease-out, border-color .15s ease-out, background .15s ease-out;
+    }
+
+    .game-card:hover{
+      transform:translateY(-3px);
+      border-color:rgba(34,197,94,0.7);
+      box-shadow:0 10px 30px rgba(34,197,94,0.25);
+      background:radial-gradient(circle at top,rgba(22,163,74,0.22),rgba(15,23,42,1));
+    }
+
+    .game-thumb{
+      width:110px;
+      height:110px;
+      border-radius:16px;
+      overflow:hidden;
+      flex-shrink:0;
+      background:#020617;
+    }
+
+    .game-thumb img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .game-info{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      text-align:left;
+    }
+
+    .game-name{
+      font-size:15px;
+      font-weight:700;
+      color:#fff;
+    }
+
+    .game-meta{
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .hint{
+      margin-top:10px;
+      font-size:11px;
+      color:var(--muted);
+    }
+
+    .current-game{
+      margin-top:4px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:7px 9px;
+      border-radius:12px;
+      background:radial-gradient(circle at 0 0,rgba(34,197,94,0.12),rgba(15,23,42,0.96));
+      border:1px solid rgba(34,197,94,0.5);
+    }
+
+    .current-game-thumb{
+      width:46px;
+      height:46px;
+      border-radius:12px;
+      overflow:hidden;
+      background:#020617;
+      flex-shrink:0;
+    }
+
+    .current-game-thumb img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .current-game-text{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+    }
+
+    .current-game-title{
+      font-size:13px;
+      font-weight:700;
+      color:#f9fafb;
+    }
+
+    .current-game-sub{
+      font-size:11px;
+      color:var(--muted);
+    }
+
+    .btn-ghost{
+      margin-top:10px;
+      padding:9px 14px;
+      border-radius:999px;
+      border:1px solid rgba(34,197,94,0.6);
+      background:radial-gradient(circle at top,rgba(15,23,42,0.95),rgba(15,23,42,1));
+      color:#e5e7eb;
+      font-size:12px;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      font-weight:500;
+      box-shadow:0 0 0 1px rgba(15,23,42,0.9);
+    }
+
+    .btn-ghost:hover{
+      border-color:rgba(34,197,94,0.9);
+      box-shadow:0 8px 24px rgba(34,197,94,0.35);
+      background:radial-gradient(circle at top,rgba(22,163,74,0.18),rgba(15,23,42,1));
+    }
+
+    .btn-ghost span.icon{
+      width:22px;
+      height:22px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,0.7);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:13px;
+    }
+
     .controls{
       margin-top:12px;
       display:flex;
@@ -241,10 +435,7 @@
       overflow:hidden;
     }
 
-    .btn span{
-      position:relative;
-      z-index:1;
-    }
+    .btn span{position:relative;z-index:1;}
 
     .btn::before{
       content:"";
@@ -263,9 +454,7 @@
       background:linear-gradient(180deg,#22c55e,#166534);
     }
 
-    @keyframes spin{
-      to{transform:rotate(360deg);}
-    }
+    @keyframes spin{to{transform:rotate(360deg);}}
 
     .btn:disabled{
       opacity:0.6;
@@ -273,14 +462,6 @@
       box-shadow:none;
     }
 
-    .btn:active:not(:disabled){
-      transform:translateY(1px);
-      box-shadow:
-        0 6px 18px rgba(34,197,94,0.28),
-        0 0 8px rgba(22,163,74,0.5);
-    }
-
-    /* ===== LOADER / STATUS LINE ===== */
     .loader{
       display:none;
       margin-top:10px;
@@ -290,7 +471,6 @@
       border:1px dashed rgba(34,197,94,0.5);
       font-size:12px;
       color:var(--muted);
-      display:flex;
       align-items:center;
       justify-content:space-between;
       gap:10px;
@@ -333,10 +513,9 @@
       background:rgba(15,23,42,0.7);
     }
 
-    /* ===== OUTPUT LIST ===== */
     .output{
       margin-top:14px;
-      padding:12px 9px 6px; /* меньше снизу */
+      padding:12px 9px 6px;
       border-radius:14px;
       background:radial-gradient(circle at top,rgba(15,23,42,0.9),rgba(15,23,42,0.96));
       border:1px solid rgba(148,163,184,0.45);
@@ -384,24 +563,6 @@
       overflow:hidden;
     }
 
-    .item::before{
-      content:"";
-      position:absolute;
-      inset:-2px;
-      border-radius:inherit;
-      border:1px solid transparent;
-      background:linear-gradient(120deg,rgba(34,197,94,0.75),transparent,rgba(56,189,248,0.55)) border-box;
-      -webkit-mask:linear-gradient(#000 0 0) padding-box,linear-gradient(#000 0 0);
-      -webkit-mask-composite:xor;
-              mask-composite:exclude;
-      opacity:0.0;
-      transition:opacity .18s ease-out;
-    }
-
-    .item:hover::before{
-      opacity:0.26;
-    }
-
     .item-main{
       display:flex;
       flex-direction:column;
@@ -434,22 +595,24 @@
 
     .footer{
       text-align:center;
-      margin-top:6px;
-      font-size:11px;
+      margin-top:10px;
+      font-size:10px;
       color:var(--muted);
-      font-family:ui-monospace,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+      border-top:1px solid rgba(148,163,184,0.25);
+      padding-top:6px;
+    }
+
+    .footer span{
+      color:var(--accent-strong);
     }
 
     @media (max-width:600px){
       .wrap{padding:10px}
-      .panel{padding:12px 10px 8px}
+      .panel{padding:12px 12px 8px}
       h1{font-size:17px}
       .controls{flex-direction:column;align-items:stretch}
       input[type=number]{width:100%}
       .btn{width:100%;font-size:15px;padding:11px 14px}
-      .item{padding:8px}
-      .label{font-size:14px}
-      .meta{font-size:11px;padding:3px 8px}
     }
   </style>
 </head>
@@ -458,61 +621,211 @@
 <div class="wrap">
   <div class="panel">
     <div class="panel-inner">
+
+      <div class="app-header">
+        <div class="logo-block">
+          <div class="logo-mark">PX</div>
+          <div>
+            <div class="logo-text-main">PatternX Predictor</div>
+            <div class="logo-text-sub">Slot Pattern Engine</div>
+          </div>
+        </div>
+        <div class="app-version">v1.4.2</div>
+      </div>
+
       <div class="top-row">
         <h1>
           <span class="cipher-dot"></span>
-          مولّد نمط الرهانات
+          مولّد الأنماط
         </h1>
         <div class="status-pill">
           <span class="status-dot"></span>
-          <span>وضع التحليل النمطي v1.4</span>
+          <span>وضع الهكر مفعّل</span>
         </div>
       </div>
 
-      <div class="subtitle">
-        توليد <span>5 أنماط مختلفة</span> للرهان من ميزانية واحدة. إذا كان إجمالي الرهان أكبر من 15 درهم، يتم استخدام <span>لفة واحدة</span> فقط في هذا السطر.
-      </div>
-
-      <div class="controls">
-        <div style="display:flex;flex-direction:column;width:100%">
-          <label for="budget">
-            الميزانية الكلية (MAD)
-            <span class="chip">من 5 وما فوق</span>
-          </label>
-          <input id="budget" type="number" value="50" min="5" placeholder="مثال: 50">
+      <!-- SCREEN 1: SELECT GAME -->
+      <div id="screen-select" class="screen active">
+        <div class="subtitle">
+          اختر لعبة السلوت لحساب أنماط الرهانات حسب جدول الرهانات الحقيقي.
         </div>
-        <button id="gen" class="btn">
-          <span>الحصول على الإستراتيجية</span>
-        </button>
+
+        <div class="games-title">اختر اللعبة:</div>
+
+        <div class="games-column">
+          <!-- Sweet Bonanza Super Scatter -->
+          <button class="game-card" data-game="sweet">
+            <div class="game-thumb">
+              <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMu-PtKvlakmJOzpGiDrvwhVo7VWl1Y5zddQ&s"
+                   alt="Sweet Bonanza Super Scatter">
+            </div>
+            <div class="game-info">
+              <div class="game-name">Sweet Bonanza Super Scatter</div>
+              <div class="game-meta">Stake table custom · volatility balanced</div>
+            </div>
+          </button>
+
+          <!-- Gates of Olympus -->
+          <button class="game-card" data-game="olympus">
+            <div class="game-thumb">
+              <img src="https://rara-avis.by/wp-content/uploads/2023/07/gates-of-olympus-pragmatic-play.jpg"
+                   alt="Gates of Olympus">
+            </div>
+            <div class="game-info">
+              <div class="game-name">Gates of Olympus</div>
+              <div class="game-meta">High variance · strong multipliers</div>
+            </div>
+          </button>
+
+          <!-- The Dog House Megaways -->
+          <button class="game-card" data-game="doghouse">
+            <div class="game-thumb">
+              <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSryJQj5Dj8mBT6G3XtvgeC7zEcnXkQE7iI-w&s"
+                   alt="The Dog House Megaways">
+            </div>
+            <div class="game-info">
+              <div class="game-name">The Dog House Megaways</div>
+              <div class="game-meta">Volatile patterns · long lines</div>
+            </div>
+          </button>
+        </div>
+
+        <div class="hint">
+          اضغط على لعبة لفتح مولّد الأنماط الخاص بها.
+        </div>
       </div>
 
-      <!-- LOADER -->
-      <div id="loader" class="loader">
-        <div class="loader-left">
-          <div class="loader-dots">
-            <div class="loader-dot"></div>
-            <div class="loader-dot"></div>
-            <div class="loader-dot"></div>
+      <!-- SCREEN 2: GENERATOR -->
+      <div id="screen-generator" class="screen">
+        <div class="subtitle">
+          أنشئ <span>٥ أنماط مختلفة</span> من ميزانية واحدة. إذا كان مجموع الرهان أكبر من 12 MAD فسيتم استخدام <span>لفة واحدة فقط</span> في هذا الصف.
+        </div>
+
+        <div class="current-game">
+          <div class="current-game-thumb">
+            <img id="currentGameImg" src="" alt="Selected game">
           </div>
-          <span>جاري تحليل النمط من ميزانيتك…</span>
+          <div class="current-game-text">
+            <div class="current-game-title" id="currentGameLabel">Game</div>
+            <div class="current-game-sub" id="currentGameDesc">رهانات مرتبطة بجدول الرهانات الحقيقي في السلوت.</div>
+          </div>
         </div>
-        <div class="loader-tag">SYSTEM: ACTIVE</div>
+
+        <button id="backBtn" class="btn-ghost">
+          <span class="icon">←</span>
+          <span>تغيير اللعبة</span>
+        </button>
+
+        <div class="controls">
+          <div style="display:flex;flex-direction:column;width:100%">
+            <label for="budget">
+              إجمالي الميزانية (MAD)
+              <span class="chip">من 5 فما فوق</span>
+            </label>
+            <input id="budget" type="number" value="50" min="1" placeholder="Ejemplo: 50">
+          </div>
+          <button id="gen" class="btn">
+            <span>الحصول على الاستراتيجية</span>
+          </button>
+        </div>
+
+        <div id="loader" class="loader">
+          <div class="loader-left">
+            <div class="loader-dots">
+              <div class="loader-dot"></div>
+              <div class="loader-dot"></div>
+              <div class="loader-dot"></div>
+            </div>
+            <span>تحليل الأنماط حسب ميزانيتك...</span>
+          </div>
+          <div class="loader-tag">SYSTEM: ACTIVE</div>
+        </div>
+
+        <div id="output" class="output">
+          <div class="output-header">
+            <span>نتيجة آخر تحليل</span>
+            <span class="output-header-code" id="sessionTag">SESSION #0000</span>
+          </div>
+          <div id="list" class="list"></div>
+          <div id="footer" class="footer"></div>
+        </div>
       </div>
 
-      <div id="output" class="output">
-        <div class="output-header">
-          <span>نتيجة آخر تحليل</span>
-          <span class="output-header-code" id="sessionTag">SESSION #0000</span>
-        </div>
-        <div id="list" class="list"></div>
-        <div id="footer" class="footer"></div>
+      <!-- FOOTER -->
+      <div class="footer">
+        <div>PatternX Predictor <span>v1.4.2</span> · مهيأ للعملة MAD</div>
+        <div style="margin-top:2px;">أداة للاستراتيجية الداخلية · لا تضمن أي نتائج.</div>
       </div>
+
     </div>
   </div>
 </div>
 
 <script>
 (function(){
+
+  const GAMES = {
+    sweet: {
+      label: "Sweet Bonanza Super Scatter",
+      desc: "رهانات مرتبطة بجدول الرهانات الحقيقي في السلوت.",
+      img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMu-PtKvlakmJOzpGiDrvwhVo7VWl1Y5zddQ&s",
+      bets: [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 30, 40, 50]
+    },
+    doghouse: {
+      label: "The Dog House Megaways",
+      desc: "رهانات مرتبطة بجدول الرهانات الحقيقي في السلوت.",
+      img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSryJQj5Dj8mBT6G3XtvgeC7zEcnXkQE7iI-w&s",
+      bets: [2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 16, 20, 24, 28, 30, 32, 36, 40, 50]
+    },
+    olympus: {
+      label: "Gates of Olympus",
+      desc: "رهانات مرتبطة بجدول الرهانات الحقيقي في السلوت.",
+      img: "https://rara-avis.by/wp-content/uploads/2023/07/gates-of-olympus-pragmatic-play.jpg",
+      bets: [2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 16, 20, 24, 28, 30, 32, 36, 40, 50]
+    }
+  };
+
+  let currentGameKey = null;
+
+  const screenSelect = document.getElementById("screen-select");
+  const screenGenerator = document.getElementById("screen-generator");
+  const currentGameLabel = document.getElementById("currentGameLabel");
+  const currentGameDesc = document.getElementById("currentGameDesc");
+  const currentGameImg = document.getElementById("currentGameImg");
+
+  function showScreen(name){
+    screenSelect.classList.remove("active");
+    screenGenerator.classList.remove("active");
+    if (name === "select") screenSelect.classList.add("active");
+    if (name === "generator") screenGenerator.classList.add("active");
+  }
+
+  function delayedSwitch(targetScreen){
+    document.body.classList.add("page-transition");
+    setTimeout(() => {
+      showScreen(targetScreen);
+      document.body.classList.remove("page-transition");
+    }, 2000);
+  }
+
+  document.querySelectorAll(".game-card").forEach(card => {
+    card.addEventListener("click", () => {
+      const key = card.dataset.game;
+      currentGameKey = key;
+      const g = GAMES[key];
+
+      currentGameLabel.textContent = g.label;
+      currentGameDesc.textContent = g.desc;
+      currentGameImg.src = g.img;
+      currentGameImg.alt = g.label;
+
+      delayedSwitch("generator");
+    });
+  });
+
+  document.getElementById("backBtn").addEventListener("click", () => {
+    delayedSwitch("select");
+  });
 
   function randomUnique5(){
     const s = new Set();
@@ -522,45 +835,37 @@
     return Array.from(s);
   }
 
-  function computePattern(budget){
+  function snapToBet(value, betList){
+    let nearest = betList[0];
+    let diff = Math.abs(value - betList[0]);
+    for (let i = 1; i < betList.length; i++){
+      const d = Math.abs(value - betList[i]);
+      if (d < diff){
+        diff = d;
+        nearest = betList[i];
+      }
+    }
+    return nearest;
+  }
+
+  function computePattern(budget, betList){
     const raw = randomUnique5();
     const sumRaw = raw.reduce((a,b)=>a+b,0);
     const scaled = raw.map(v => v / sumRaw * budget);
-
-    let rounded = scaled.map(v => Math.floor(v));
-    let diff = budget - rounded.reduce((a,b)=>a+b,0);
-
-    while (diff > 0){
-      const i = Math.floor(Math.random()*5);
-      rounded[i]++;
-      diff--;
-    }
-
-    const used = new Set();
-    for (let i=0;i<5;i++){
-      while (used.has(rounded[i])){
-        rounded[i]++;
-      }
-      used.add(rounded[i]);
-    }
-
-    for (let i = rounded.length - 1; i > 0; i--){
-      const j = Math.floor(Math.random() * (i + 1));
-      [rounded[i], rounded[j]] = [rounded[j], rounded[i]];
-    }
-
-    return rounded;
+    return scaled.map(v => snapToBet(v, betList));
   }
 
   function generateSpins(sum){
-    if (sum > 14) return 1;
-    return Math.floor(Math.random()*6) + 2; // 2–7
+    if (sum > 12) return 1;
+    const min = 2;
+    const max = 7;
+    return Math.floor(Math.random()*(max - min + 1)) + min;
   }
 
   function generateSessionId(){
     const now = Date.now().toString(16).slice(-4);
     const rand = Math.floor(Math.random()*4096).toString(16).padStart(3,"0");
-    return `#${now.toUpperCase()}-${rand.toUpperCase()}`;
+    return "#" + now.toUpperCase() + "-" + rand.toUpperCase();
   }
 
   function render(pattern, budget){
@@ -584,15 +889,15 @@
 
       const label = document.createElement("div");
       label.className = "label";
-      label.textContent = `إجمالي الرهان: ${total} MAD`;
+      label.textContent = "إجمالي الرهان: " + total + " MAD";
 
       const sub = document.createElement("div");
       sub.className = "sub-label";
-      sub.textContent = `خط رقم ${i+1} — high-variance pattern`;
+      sub.textContent = "السطر #" + (i+1) + " — نمط عالي التذبذب";
 
       const meta = document.createElement("div");
       meta.className = "meta";
-      meta.textContent = `عدد اللفات: ${spins}`;
+      meta.textContent = "عدد اللفات: " + spins;
 
       main.appendChild(label);
       main.appendChild(sub);
@@ -602,8 +907,7 @@
     }
 
     const sum = pattern.reduce((a,b)=>a+b,0);
-    footer.textContent = `TOTAL DISTRIBUTED = ${sum} MAD   |   INPUT BUDGET = ${budget} MAD`;
-
+    footer.textContent = "TOTAL DISTRIBUIDO ≈ " + sum.toFixed(2) + " MAD   |   PRESUPUESTO INICIAL = " + budget + " MAD";
     out.style.display = "block";
   }
 
@@ -612,23 +916,29 @@
   const output = document.getElementById("output");
 
   btn.addEventListener("click", () => {
-    const budget = parseInt(document.getElementById("budget").value, 10) || 0;
-    if (budget <= 0){
-      alert("أدخل ميزانية صحيحة من فضلك (أعلى من 0).");
+    const budget = parseFloat(document.getElementById("budget").value) || 0;
+    if (!currentGameKey){
+      alert("اختر اللعبة أولاً.");
       return;
     }
+    if (budget <= 0){
+      alert("أدخل ميزانية صالحة (أكبر من 0).");
+      return;
+    }
+
+    const game = GAMES[currentGameKey];
 
     btn.disabled = true;
     loader.style.display = "flex";
     output.style.display = "none";
 
     setTimeout(() => {
-      const pattern = computePattern(budget);
+      const pattern = computePattern(budget, game.bets);
       render(pattern, budget);
 
       loader.style.display = "none";
       btn.disabled = false;
-    }, 1500);
+    }, 1200);
   });
 
 })();
